@@ -8,79 +8,124 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #0f172a;
-      color: #e2e8f0;
-      max-width: 768px;
-      margin: auto;
+      background: url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fef2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: rgba(30, 30, 30, 0.85);
       padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      max-width: 720px;
+      width: 100%;
+      overflow: hidden;
     }
+
     h1 {
-      color: #38bdf8;
+      color: #fca5a5;
+      font-size: 2rem;
+      text-align: center;
     }
-    input {
+
+    p {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    input, pre {
       width: 100%;
       padding: 0.75rem;
-      background: #1e293b;
-      border: none;
+      background: #1f1f1f;
+      border: 1px solid #555;
       border-radius: 6px;
       color: white;
-      margin-top: 0.5rem;
       font-size: 1rem;
+      margin-top: 1rem;
+      box-sizing: border-box;
     }
+
+    pre {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #fb7185;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
     button {
-      background-color: #3b82f6;
+      flex: 1;
+      background-color: #fb7185;
       color: white;
       border: none;
       border-radius: 6px;
       padding: 0.75rem 1.25rem;
       font-size: 1rem;
-      margin-top: 1rem;
       cursor: pointer;
+      transition: background 0.3s;
     }
-    pre {
-      background: #1e293b;
-      color: #f8fafc;
-      padding: 1rem;
-      border-radius: 6px;
-      white-space: pre-wrap;
-      word-break: break-word;
+
+    button:hover {
+      background-color: #f43f5e;
     }
+
     .copy {
-      background-color: #10b981;
-      margin-left: 1rem;
+      background-color: #f87171;
     }
-    .meta {
-      font-size: 0.875rem;
-      color: #94a3b8;
-      margin-top: 1rem;
+
+    .copy:hover {
+      background-color: #ef4444;
+    }
+
+    h3 {
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
-  <h1>Nuclei Template Generator via CF Worker</h1>
-  <p>Enter a URL to fetch its content and generate a compliant Nuclei YAML template. All processing is done via a transparent Cloudflare Worker.</p>
-  <input type="text" id="url" placeholder="https://example.com/path" />
-  <button onclick="generate()">Generate Template</button>
-  <button class="copy" onclick="copyYAML()">Copy YAML</button>
+  <div class="container">
+    <h1>Nuclei Template Generator</h1>
+    <p>Enter a URL to generate a Nuclei YAML template.</p>
+    <input type="text" id="url" placeholder="https://example.com/path" />
+    <div class="button-row">
+      <button onclick="generate()">Generate Template</button>
+      <button class="copy" onclick="copyYAML()">Copy YAML</button>
+    </div>
 
-  <div class="meta" id="meta"></div>
-  <h3>Generated YAML:</h3>
-  <pre id="yaml"></pre>
+    <h3>Generated YAML:</h3>
+    <pre id="yaml"></pre>
+  </div>
 
   <script>
     async function generate() {
       const input = document.getElementById("url").value.trim();
       const output = document.getElementById("yaml");
-      const meta = document.getElementById("meta");
       output.innerText = "Fetching...";
-      meta.innerText = "";
 
       try {
-        const res = await fetch("https://nuclei-yaml-generator.debangshuk999.workers.dev?url=" + encodeURIComponent(input));
-        const data = await res.json();
+        const workerURL = "https://nuclei-yaml-generator.debangshuk999.workers.dev?url=" + encodeURIComponent(input);
+        const res = await fetch(workerURL);
 
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
         output.innerText = data.yaml;
-        meta.innerText = `Status: ${data.status}\nKeywords Used: ${data.words.join(", ")}\n\nResponse Headers:\n` + data.headers.join("\n");
       } catch (err) {
         output.innerText = "Error: " + err.message;
       }
@@ -95,4 +140,3 @@
   </script>
 </body>
 </html>
-
