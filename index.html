@@ -101,7 +101,7 @@
 <body>
   <div class="container">
     <h1>Nuclei Template Generator</h1>
-    <p>Enter a URL to generate a Nuclei YAML template.</p>
+    <p>Enter a URL to generate a Nuclei YAML template. Powered by Cloudflare Worker.</p>
     <input type="text" id="url" placeholder="https://example.com/path" />
     <div class="button-row">
       <button onclick="generate()">Generate Template</button>
@@ -113,6 +113,14 @@
   </div>
 
   <script>
+    function sanitizeId(url) {
+      let clean = url.replace(/https?:\/\//, '')
+                     .replace(/[^a-zA-Z0-9]+/g, '-')
+                     .replace(/^-+|-+$/g, '') // trim leading/trailing hyphens
+                     .replace(/-+/g, '-'); // collapse consecutive dashes
+      return clean;
+    }
+
     async function generate() {
       const input = document.getElementById("url").value.trim();
       const output = document.getElementById("yaml");
@@ -126,6 +134,7 @@
 
         const data = await res.json();
         output.innerText = data.yaml;
+
       } catch (err) {
         output.innerText = "Error: " + err.message;
       }
